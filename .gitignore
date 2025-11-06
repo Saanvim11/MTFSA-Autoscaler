@@ -1,0 +1,19 @@
+# Virtual Env
+mtfsa_env/
+env/
+venv/
+
+# Python
+__pycache__/
+*.pyc
+
+# Jupyter
+.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
