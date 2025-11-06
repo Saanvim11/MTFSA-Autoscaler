@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 import gdown
+import joblib
 
 # ---------------------- APP CONFIG ----------------------
 st.set_page_config(page_title="MTFSA Cloud Autoscaler", layout="wide")
@@ -18,10 +19,10 @@ st.title("☁️ MTFSA: Meta-LSTM Cloud Autoscaler")
 def download_models():
     os.makedirs("/tmp/models", exist_ok=True)
 
-    # ✅ Update these with your Drive file IDs
+    # ✅ Replace with your actual Google Drive file IDs
     drive_links = {
         "final_model2.keras": "https://drive.google.com/file/d/191BZrVEkET0lMD9RQiQZzbRItXHYalHU/view?usp=drive_link",
-        "rf_refiner.keras": "YOUR_DRIVE_ID_2https://drive.google.com/file/d/1bWIwYk4bn-nWnfKInCXGGgl1aXY-HQLH/view?usp=drive_link",
+        "rf_refiner.pkl": "https://drive.google.com/file/d/1bWIwYk4bn-nWnfKInCXGGgl1aXY-HQLH/view?usp=drive_link",
     }
 
     local_paths = {}
@@ -41,21 +42,17 @@ def load_lstm_model(path):
 
 
 def load_rf_model(path):
-    # For RandomForest saved as .keras, use joblib/pickle if needed
-    import joblib
     return joblib.load(path)
 
 
-# ---------------------- APP EXECUTION ----------------------
+# ---------------------- EXECUTION ----------------------
 paths = download_models()
-
 LSTM_MODEL_PATH = paths["final_model2.keras"]
-RF_MODEL_PATH = paths["rf_refiner.keras"]
+RF_MODEL_PATH = paths["rf_refiner.pkl"]
 
 st.write("✅ LSTM model path:", LSTM_MODEL_PATH)
 st.write("✅ Exists:", os.path.exists(LSTM_MODEL_PATH))
 
-# Load models
 try:
     lstm_model = load_lstm_model(LSTM_MODEL_PATH)
     st.success("✅ LSTM Model Loaded Successfully!")
@@ -96,4 +93,4 @@ fig, ax = plt.subplots()
 sns.boxplot(data=demo_data, ax=ax)
 st.pyplot(fig)
 
-st.info("Built with TensorFlow 2.20.0, Python 3.10, and Streamlit 1.30.0")
+st.info("Built with TensorFlow 2.15.0, Python 3.10, and Streamlit 1.30.0")
