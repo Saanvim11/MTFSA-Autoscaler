@@ -21,37 +21,38 @@ LSTM_MODEL_PATH = os.path.join(tempfile.gettempdir(), "final_model2.keras")
 RF_MODEL_PATH   = os.path.join(tempfile.gettempdir(), "rf_refiner.pkl")
 
 # ---------- DOWNLOAD MODELS WITH RETRY ----------
-@st.cache_resource
-def download_models():
-    import time
+# ---------- FORCE DOWNLOAD BEFORE ANYTHING ----------
+st.markdown("### Initializing MTFSA...")
 
-    def download_file(url, dest_path, name):
-        if os.path.exists(dest_path):
-            st.success(f"{name} already downloaded.")
-            return dest_path
+@st.cache_resource(show_spinner=False)
+def ensure_models():
+    def download(url, path, name, size_mb):
+        if os.path.exists(path) and os.path.getsize(path) > size_mb * 0.9 * 1024**2:
+            st.success(f"{name} ready.")
+            return path
         
-        with st.spinner(f"Downloading {name}... (~{'250' if 'keras' in dest_path else '50'}MB)"):
-            for attempt in range(3):
-                try:
-                    urllib.request.urlretrieve(url, dest_path)
-                    if os.path.getsize(dest_path) > 10_000_000:  # >10MB
-                        st.success(f"{name} downloaded!")
-                        return dest_path
-                    else:
-                        st.warning(f"{name} too small. Retrying...")
-                except Exception as e:
-                    st.warning(f"Attempt {attempt+1} failed: {e}")
-                    time.sleep(2)
-            st.error(f"Failed to download {name}. Check internet or URL.")
-            raise FileNotFoundError(f"Could not download {name}")
-
-    lstm_path = download_file(LSTM_DRIVE_URL, LSTM_MODEL_PATH, "LSTM model")
-    rf_path   = download_file(RF_DRIVE_URL,   RF_MODEL_PATH,   "RF model")
+        placeholder = st.empty()
+        placeholder.warning(f"Downloading {name} ({size_mb}MB)... Please wait.")
+        try:
+            urllib.request.urlretrieve(url, path)
+            if os.path.getsize(path) > size_mb * 0.8 * 1024**2:
+                placeholder.success(f"{name} downloaded!")
+                return path
+            else:
+                placeholder.error("Download corrupted.")
+                raise Exception()
+        except:
+            placeholder.error(f"Failed to download {name}")
+            raise
+    
+    lstm_path = download(LSTM_DRIVE_URL, LSTM_MODEL_PATH, "LSTM model", 250)
+    rf_path   = download(RF_DRIVE_URL,   RF_MODEL_PATH,   "RF model",    50)
     
     return lstm_path, rf_path
 
-LSTM_MODEL_PATH, RF_MODEL_PATH = download_models()
-# ---------- LOAD MODELS ----------
+LSTM_MODEL_PATH, RF_MODEL_PATH = ensure_models()
+
+# NOW safe to load
 @st.cache_resource
 def load_lstm():
     return tf.keras.models.load_model(LSTM_MODEL_PATH)
@@ -61,8 +62,11 @@ def load_rf():
     with open(RF_MODEL_PATH, 'rb') as f:
         return pickle.load(f)
 
+# Load after download
 lstm_model = load_lstm()
 rf_model = load_rf()
+
+st.success("MTFSA ready!")
 
 # ---------- LOAD DATA (FROM REPO) ----------
 @st.cache_data
