@@ -8,4 +8,4 @@ services:
     startCommand: streamlit run app_final.py --server.port $PORT --server.address 0.0.0.0
     envVars:
       - key: PYTHON_VERSION
-        value: "3.10.12"
+        value: 3.10.12
