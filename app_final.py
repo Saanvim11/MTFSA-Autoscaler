@@ -20,23 +20,37 @@ RF_DRIVE_URL   = "https://drive.google.com/uc?export=download&id=191BZrVEkET0lMD
 LSTM_MODEL_PATH = os.path.join(tempfile.gettempdir(), "final_model2.keras")
 RF_MODEL_PATH   = os.path.join(tempfile.gettempdir(), "rf_refiner.pkl")
 
-# ---------- DOWNLOAD MODELS ----------
+# ---------- DOWNLOAD MODELS WITH RETRY ----------
 @st.cache_resource
 def download_models():
-    # Download LSTM
-    if not os.path.exists(LSTM_MODEL_PATH):
-        with st.spinner("Downloading LSTM model (~250MB)... This takes 1–2 minutes."):
-            urllib.request.urlretrieve(LSTM_DRIVE_URL, LSTM_MODEL_PATH)
+    import time
+
+    def download_file(url, dest_path, name):
+        if os.path.exists(dest_path):
+            st.success(f"{name} already downloaded.")
+            return dest_path
+        
+        with st.spinner(f"Downloading {name}... (~{'250' if 'keras' in dest_path else '50'}MB)"):
+            for attempt in range(3):
+                try:
+                    urllib.request.urlretrieve(url, dest_path)
+                    if os.path.getsize(dest_path) > 10_000_000:  # >10MB
+                        st.success(f"{name} downloaded!")
+                        return dest_path
+                    else:
+                        st.warning(f"{name} too small. Retrying...")
+                except Exception as e:
+                    st.warning(f"Attempt {attempt+1} failed: {e}")
+                    time.sleep(2)
+            st.error(f"Failed to download {name}. Check internet or URL.")
+            raise FileNotFoundError(f"Could not download {name}")
+
+    lstm_path = download_file(LSTM_DRIVE_URL, LSTM_MODEL_PATH, "LSTM model")
+    rf_path   = download_file(RF_DRIVE_URL,   RF_MODEL_PATH,   "RF model")
     
-    # Download RF
-    if not os.path.exists(RF_MODEL_PATH):
-        with st.spinner("Downloading RF model (~50MB)..."):
-            urllib.request.urlretrieve(RF_DRIVE_URL, RF_MODEL_PATH)
-    
-    return LSTM_MODEL_PATH, RF_MODEL_PATH
+    return lstm_path, rf_path
 
 LSTM_MODEL_PATH, RF_MODEL_PATH = download_models()
-
 # ---------- LOAD MODELS ----------
 @st.cache_resource
 def load_lstm():
