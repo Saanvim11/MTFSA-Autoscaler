@@ -1,4 +1,4 @@
-[# MTFSA-Autoscaler  
+# MTFSA-Autoscaler  
 **Meta + Few-Shot + Transfer Learning Hybrid Autoscaler for FaaS Cold Start Prediction**  
 
 **Predicts function-level cold starts using only 3 hours of historical data — no fine-tuning required.**  
