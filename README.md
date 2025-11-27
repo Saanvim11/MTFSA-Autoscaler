@@ -1,4 +1,4 @@
-# MTFSA-Autoscaler  
+[# MTFSA-Autoscaler  
 **Meta + Few-Shot + Transfer Learning Hybrid Autoscaler for FaaS Cold Start Prediction**  
 
 **Predicts function-level cold starts using only 3 hours of historical data — no fine-tuning required.**  
@@ -50,6 +50,7 @@ Achieved **RMSE 0.117 | R² 0.876 | 100% accuracy within ±0.5** on 1,272 sparse
                    Final Forecast + Auto-Scaling Alert
 
 ## Project Structure
+```text
 ├── app_final.py
 ├── models/
 │   ├── final_model2.keras    (77 KB)
@@ -59,8 +60,7 @@ Achieved **RMSE 0.117 | R² 0.876 | 100% accuracy within ±0.5** on 1,272 sparse
 └── render.yaml               (One-click Render deploy)
 
 ## Quick Start 
-git clone https://github.com/Saanvim11/MTFSA-Autoscaler.git
-cd MTFSA-Autoscaler
-pip install -r requirements.txt
-streamlit run app_final.py
-
+- git clone https://github.com/Saanvim11/MTFSA-Autoscaler.git
+- cd MTFSA-Autoscaler
+- pip install -r requirements.txt
+- Render run app_final.py
